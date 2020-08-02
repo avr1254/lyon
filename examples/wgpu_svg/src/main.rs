@@ -174,8 +174,8 @@ fn main() {
 
     // Initialize wgpu and send some data to the GPU.
 
-    let vb_width = view_box.rect.size().width as f32;
-    let vb_height = view_box.rect.size().height as f32;
+    let vb_width = view_box.rect.size().width() as f32;
+    let vb_height = view_box.rect.size().height() as f32;
     let scale = vb_width / vb_height;
 
     let (width, height) = if scale < 1.0 {
@@ -388,8 +388,9 @@ fn main() {
     );
 
     // Initializaition encode to same primitive and transform data that will not change over frames
-    let mut init_encoder =
-        device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("Init encoder") });
+    let mut init_encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+        label: Some("Init encoder"),
+    });
 
     init_encoder.copy_buffer_to_buffer(
         &transform_transfer_buffer,
@@ -425,29 +426,31 @@ fn main() {
             swap_chain = Some(device.create_swap_chain(&window_surface, &swap_chain_desc));
             if msaa_samples > 1 {
                 msaa_texture = Some(
-                    device.create_texture(&wgpu::TextureDescriptor {
-                        label: Some("Multisampled frame descriptor"),
-                        size: wgpu::Extent3d {
-                            width: swap_chain_desc.width,
-                            height: swap_chain_desc.height,
-                            depth: 1,
-                        },
-                        array_layer_count: 1,
-                        mip_level_count: 1,
-                        sample_count: msaa_samples,
-                        dimension: wgpu::TextureDimension::D2,
-                        format: swap_chain_desc.format,
-                        usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-                    }).create_default_view(),
+                    device
+                        .create_texture(&wgpu::TextureDescriptor {
+                            label: Some("Multisampled frame descriptor"),
+                            size: wgpu::Extent3d {
+                                width: swap_chain_desc.width,
+                                height: swap_chain_desc.height,
+                                depth: 1,
+                            },
+                            array_layer_count: 1,
+                            mip_level_count: 1,
+                            sample_count: msaa_samples,
+                            dimension: wgpu::TextureDimension::D2,
+                            format: swap_chain_desc.format,
+                            usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+                        })
+                        .create_default_view(),
                 );
             }
         }
 
         let swap_chain = swap_chain.as_mut().unwrap();
         let frame = swap_chain.get_next_texture().unwrap();
-        let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("Encoder") });
-
+        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Encoder"),
+        });
 
         let globals_transfer_buffer = device.create_buffer_with_data(
             bytemuck::cast_slice(&[GpuGlobals {
@@ -752,7 +755,7 @@ impl<'l> Iterator for PathConvIter<'l> {
 
 pub fn convert_path<'a>(p: &'a usvg::Path) -> PathConvIter<'a> {
     PathConvIter {
-        iter: p.segments.iter(),
+        iter: p.data.iter(),
         first: Point::new(0.0, 0.0),
         prev: Point::new(0.0, 0.0),
         deferred: None,
